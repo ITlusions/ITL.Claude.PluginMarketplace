@@ -1,7 +1,7 @@
 {
   "name": "nexustrade-plugin",
   "description": "Quantitative trading analysis toolkit: 7-step technical/fundamental analysis, position sizing, risk/reward validation, and adversarial risk review agents with 1% risk-rule enforcement.",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "author": {
     "name": "Niels Weistra",
     "email": "n.weistra@itlusions.nl"
