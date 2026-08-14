@@ -10,6 +10,11 @@
       "name": "nexustrade-plugin",
       "source": "./plugins/nexustrade-plugin",
       "description": "Quantitative trading analysis toolkit: 7-step technical/fundamental analysis, position sizing, risk/reward validation, and adversarial risk review agents with 1% risk-rule enforcement."
+    },
+    {
+      "name": "hello-plugin",
+      "source": "./plugins/hello-plugin",
+      "description": "Minimal example plugin — a single skill, used to prove the marketplace pipeline scales to multiple plugins without any pipeline changes."
     }
   ]
 }

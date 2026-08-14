@@ -20,6 +20,7 @@ Or locally, before pushing:
 | Plugin | Description |
 |---|---|
 | [`nexustrade-plugin`](plugins/nexustrade-plugin) | Quantitative trading analysis — 7-step technical/fundamental analysis, position sizing, risk/reward validation, adversarial risk review. Agents: `nexustrade`, `nexustrade-analyst`, `nexustrade-portfolio`, `nexustrade-risk`. Skill: `nexustrade` (methodology + Jupyter calculator notebooks). |
+| [`hello-plugin`](plugins/hello-plugin) | Minimal example plugin (one skill, no agents) — exists to prove the pipeline scales to multiple plugins with zero pipeline changes. |
 
 ## Adding a new plugin
 

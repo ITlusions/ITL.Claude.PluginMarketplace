@@ -1,0 +1,11 @@
+{
+  "name": "hello-plugin",
+  "description": "Minimal example plugin — a single skill, used to prove the marketplace pipeline scales to multiple plugins without any pipeline changes.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Niels Weistra",
+    "email": "n.weistra@itlusions.nl"
+  },
+  "repository": "https://github.com/ITlusions/ITL.Claude.PluginMarketplace",
+  "license": "MIT"
+}
