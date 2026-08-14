@@ -10,7 +10,7 @@ description: Minimal example skill — greets the user and reports the current d
 A deliberately trivial skill that exists to exercise the `ITL.Claude.PluginMarketplace`
 pipeline (`discover` → `ci` → `publish`) with a second, independent plugin — proving the
 pipeline's per-plugin versioning, tagging, and release logic scales without any pipeline
-changes when a new plugin is added.
+changes when a new plugin is added. Each release is tagged as `hello-plugin/vX.Y.Z`.
 
 ## Behavior
 
