@@ -546,4 +546,6 @@ watchlist.json
 
 ---
 
-**Ported from the ITL.Agents GitHub Copilot NexusTrade agent family to Claude Code format.**
+**Originally ported from the ITL.Agents GitHub Copilot NexusTrade agent family to Claude Code
+format; now maintained as the `nexustrade-plugin` in
+[ITlusions/ITL.Claude.PluginMarketplace](https://github.com/ITlusions/ITL.Claude.PluginMarketplace).**
