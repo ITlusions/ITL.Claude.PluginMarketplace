@@ -1,0 +1,36 @@
+name: Pipeline
+
+on:
+  pull_request:
+    branches: [ master ]
+  push:
+    branches: [ master, 'feature/**', 'hotfix/**' ]
+  workflow_dispatch:
+
+jobs:
+  ci:
+    strategy:
+      matrix:
+        # "." validates the marketplace root (marketplace.json); everything
+        # after that is one entry per plugin under plugins/
+        path: [ ".", "plugins/nexustrade-plugin" ]
+    uses: ITlusions/ITL.Github/.github/workflows/_reusable-claude-plugins-ci.yml@v0.2.12
+    with:
+      path: ${{ matrix.path }}
+
+  publish:
+    needs: [ ci ]
+    if: github.ref == 'refs/heads/master'
+    strategy:
+      max-parallel: 1   # each call commits + pushes to master; keep serialized
+      matrix:
+        plugin: [ nexustrade-plugin ]
+    uses: ITlusions/ITL.Github/.github/workflows/_reusable-claude-plugins-publish.yml@v0.2.12
+    with:
+      component-path: plugins/${{ matrix.plugin }}
+      component-name: ${{ matrix.plugin }}
+      branch: master
+    permissions:
+      contents: write
+      actions: read
+    secrets: inherit

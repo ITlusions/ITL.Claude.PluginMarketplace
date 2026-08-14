@@ -58,30 +58,23 @@ machines to pick up the change.
 
 ## CI/CD
 
-One pipeline, `.github/workflows/ci.yml`, built from reusable templates. It discovers every
-plugin under `plugins/*/` at runtime — **adding a new plugin needs zero pipeline changes.**
-**The pipeline owns `version` in every `plugin.json` — don't hand-edit it.**
+One pipeline, `.github/workflows/pipeline.yml`, with the same `ci` + `publish` shape used across
+ITLusions repos (e.g. `ITL.Braincell.SDK/pipeline.yml`) — both jobs are thin `uses:` wrappers
+around reusable templates centralized in
+[ITlusions/ITL.Github](https://github.com/ITlusions/ITL.Github):
 
-```
-ci.yml (single entry point, runs on every push/PR)
-├─ discover           finds every plugins/*/ with a plugin.json
-├─ validate-marketplace   ─┐
-├─ validate-plugins  (matrix)├─ both call the reusable _validate.yml template
-├─ version-and-tag    master-branch pushes only; sequential (not matrix — it
-│                      commits+pushes per plugin and builds the aggregated
-│                      list the release stage needs). Per-plugin semver
-│                      logic lives in .github/scripts/bump-plugin-version.sh,
-│                      called once per changed plugin, not duplicated inline.
-└─ release            (matrix over every plugin just tagged) calls the
-                       reusable _release.yml template
-```
+| Job | Calls | Does |
+|---|---|---|
+| `ci` | `_reusable-claude-plugins-ci.yml` (matrix: marketplace root + each plugin) | `claude plugin validate --strict` |
+| `publish` | `_reusable-claude-plugins-publish.yml` (matrix, `master` pushes only) | per plugin: compute next semver from conventional commits touching its directory, bump `plugin.json`, commit, tag via `claude plugin tag`, then zip + publish a GitHub Release — idempotent, safe to run on every push |
 
-| File | Role |
-|---|---|
-| `ci.yml` | the only workflow you watch/trigger; orchestrates everything below |
-| `_validate.yml` | reusable (`workflow_call`) — `claude plugin validate --strict` on one path |
-| `_release.yml` | reusable (`workflow_call`, also `push: tags` + `workflow_dispatch` as fallbacks) — zips a tagged plugin and publishes a GitHub Release |
-| `scripts/bump-plugin-version.sh` | shared per-plugin version-bump logic, called from `version-and-tag` |
+**The pipeline owns `version` in every `plugin.json` — don't hand-edit it.** A plugin with no tag
+yet keeps whatever version is currently committed as its v1 baseline; every bump after that is
+pipeline-owned.
+
+**Adding a new plugin**: add one entry to the `matrix.plugin` list in both the `ci` and `publish`
+jobs of `pipeline.yml` (and to `path:` in `ci` if you want it explicit) — everything else scales
+automatically via the shared templates.
 
 **To ship a new version**: just commit changes under `plugins/<name>/` to `master` using a
 [conventional commit](https://www.conventionalcommits.org/) prefix, and push:
