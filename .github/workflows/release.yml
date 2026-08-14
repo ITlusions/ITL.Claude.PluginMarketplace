@@ -4,7 +4,7 @@ name: Publish Release
 # attaches the zip — giving a stable HTTPS download URL usable with
 # `claude --plugin-url <release-asset-url>`.
 #
-# Two ways to trigger:
+# Three ways to trigger:
 #   1. workflow_call — invoked directly by tag.yml right after it creates a
 #      tag, in the same run. This is the primary path: a tag pushed with the
 #      default GITHUB_TOKEN does NOT trigger other workflows (GitHub's
@@ -12,11 +12,26 @@ name: Publish Release
 #      relying on the tag-push trigger below to fire it.
 #   2. push: tags — fallback for a tag pushed manually (e.g. a human with
 #      their own PAT/SSH key running `claude plugin tag --push` locally).
+#   3. workflow_dispatch — manual recovery: re-run the release for a tag
+#      that already exists but whose release never got created (e.g. this
+#      job failed after tagging succeeded). `gh workflow run release.yml
+#      -f plugin_name=... -f version=... -f tag=...`
 
 on:
   push:
     tags:
       - "*--v*"
+  workflow_dispatch:
+    inputs:
+      plugin_name:
+        required: true
+        type: string
+      version:
+        required: true
+        type: string
+      tag:
+        required: true
+        type: string
   workflow_call:
     inputs:
       plugin_name:
@@ -51,7 +66,11 @@ jobs:
       - name: Resolve plugin name/version/tag
         id: resolve
         run: |
-          if [ "${{ github.event_name }}" = "workflow_call" ]; then
+          # github.event_name here reflects the *caller's* trigger (e.g.
+          # workflow_run from tag.yml), not "workflow_call" — so detect a
+          # reusable-workflow invocation by whether inputs.tag was actually
+          # passed, not by event_name.
+          if [ -n "${{ inputs.tag }}" ]; then
             name="${{ inputs.plugin_name }}"
             version="${{ inputs.version }}"
             tag="${{ inputs.tag }}"
