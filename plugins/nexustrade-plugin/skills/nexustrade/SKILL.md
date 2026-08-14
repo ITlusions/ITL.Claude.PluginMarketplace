@@ -548,4 +548,5 @@ watchlist.json
 
 **Originally ported from the ITL.Agents GitHub Copilot NexusTrade agent family to Claude Code
 format; now maintained as the `nexustrade-plugin` in
-[ITlusions/ITL.Claude.PluginMarketplace](https://github.com/ITlusions/ITL.Claude.PluginMarketplace).**
+[ITlusions/ITL.Claude.PluginMarketplace](https://github.com/ITlusions/ITL.Claude.PluginMarketplace),
+versioned and released automatically via that repo's CI pipeline.**
