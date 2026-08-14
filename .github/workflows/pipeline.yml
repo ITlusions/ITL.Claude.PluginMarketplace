@@ -34,7 +34,7 @@ jobs:
           echo "Discovered plugins: $plugins"
 
   ci-marketplace:
-    uses: ITlusions/ITL.Github/.github/workflows/_reusable-claude-plugins-ci.yml@v0.2.13
+    uses: ITlusions/ITL.Github/.github/workflows/_reusable-claude-plugins-ci.yml@v0.2.14
     with:
       path: "."
 
@@ -44,7 +44,7 @@ jobs:
     strategy:
       matrix:
         plugin: ${{ fromJson(needs.discover.outputs.plugins) }}
-    uses: ITlusions/ITL.Github/.github/workflows/_reusable-claude-plugins-ci.yml@v0.2.13
+    uses: ITlusions/ITL.Github/.github/workflows/_reusable-claude-plugins-ci.yml@v0.2.14
     with:
       path: plugins/${{ matrix.plugin }}
 
@@ -55,7 +55,7 @@ jobs:
       max-parallel: 1   # each call commits + pushes to master; keep serialized
       matrix:
         plugin: ${{ fromJson(needs.discover.outputs.plugins) }}
-    uses: ITlusions/ITL.Github/.github/workflows/_reusable-claude-plugins-publish.yml@v0.2.13
+    uses: ITlusions/ITL.Github/.github/workflows/_reusable-claude-plugins-publish.yml@v0.2.14
     with:
       component-path: plugins/${{ matrix.plugin }}
       component-name: ${{ matrix.plugin }}
