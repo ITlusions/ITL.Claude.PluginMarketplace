@@ -1,0 +1,38 @@
+name: Validate
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install Claude Code CLI
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Validate marketplace manifest
+        run: claude plugin validate --strict .
+
+      - name: Validate each plugin manifest
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          found=0
+          for dir in plugins/*/; do
+            found=1
+            echo "::group::Validating $dir"
+            claude plugin validate --strict "$dir"
+            echo "::endgroup::"
+          done
+          if [ "$found" -eq 0 ]; then
+            echo "No plugins found under plugins/*/" >&2
+            exit 1
+          fi

@@ -53,6 +53,23 @@ claude plugin validate --strict .
 Bump `version` in the plugin's `plugin.json` on every content change — that's what triggers
 `/plugin marketplace update itl-claude-tools` to actually pick up changes on other machines.
 
+## CI/CD
+
+Three GitHub Actions workflows handle validation and release automatically:
+
+| Workflow | Trigger | Does |
+|---|---|---|
+| `validate.yml` | every push/PR, any branch | `claude plugin validate --strict` on the marketplace manifest and every `plugins/*/` |
+| `tag.yml` | after `validate.yml` succeeds on `master` | for each plugin, compares `plugin.json`'s `version` against existing `{plugin}--v{version}` git tags; if it changed, creates and pushes a new tag via `claude plugin tag` |
+| `release.yml` | push of a `*--v*` tag (i.e. triggered by `tag.yml`) | re-validates the tagged plugin, zips it, and publishes a GitHub Release with the zip attached |
+
+**To ship a new version**: bump `version` in the plugin's `plugin.json`, commit, push to `master`.
+The pipeline tags and releases it automatically — no manual `git tag`/`gh release` needed.
+
+Release zip URLs (`https://github.com/ITlusions/ITL.Claude.PluginMarketplace/releases/download/...`)
+are usable directly with `claude --plugin-url <url>` for one-off session loads, in addition to the
+normal `/plugin marketplace add` + `/plugin install` flow via the git HTTPS URL.
+
 ## Notes
 
 - Plugin content is bundled into `~/.claude/plugins/cache/` on install — don't reference files

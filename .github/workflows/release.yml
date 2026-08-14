@@ -1,0 +1,56 @@
+name: Publish Release
+
+# Fires when tag.yml pushes a {plugin}--v{version} tag. Re-validates the
+# tagged plugin, zips it, and publishes a GitHub Release with the zip
+# attached — giving a stable HTTPS download URL usable with
+# `claude --plugin-url <release-asset-url>`.
+
+on:
+  push:
+    tags:
+      - "*--v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install Claude Code CLI
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Parse plugin name and version from tag
+        id: parse
+        run: |
+          tag="${GITHUB_REF#refs/tags/}"
+          name="${tag%--v*}"
+          version="${tag##*--v}"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "name=$name" >> "$GITHUB_OUTPUT"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Validate the tagged plugin
+        run: claude plugin validate --strict "plugins/${{ steps.parse.outputs.name }}"
+
+      - name: Zip the plugin
+        run: |
+          cd plugins
+          zip -r "../${{ steps.parse.outputs.name }}-${{ steps.parse.outputs.version }}.zip" "${{ steps.parse.outputs.name }}"
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ steps.parse.outputs.tag }}" \
+            "${{ steps.parse.outputs.name }}-${{ steps.parse.outputs.version }}.zip" \
+            --title "${{ steps.parse.outputs.name }} v${{ steps.parse.outputs.version }}" \
+            --generate-notes

@@ -1,0 +1,65 @@
+name: Auto-Tag Plugin Releases
+
+# Runs after Validate succeeds on master. For each plugin, compares the
+# version in plugin.json against existing git tags (named {plugin}--v{version},
+# the convention enforced by `claude plugin tag`). If a plugin's version was
+# bumped and has no matching tag yet, creates and pushes one — which in turn
+# triggers release.yml.
+
+on:
+  workflow_run:
+    workflows: ["Validate"]
+    branches: [master]
+    types: [completed]
+
+permissions:
+  contents: write
+
+jobs:
+  tag:
+    if: github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: master
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install Claude Code CLI
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Re-validate (defense in depth)
+        run: claude plugin validate --strict .
+
+      - name: Configure git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Tag plugins whose version changed
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          for dir in plugins/*/; do
+            name=$(basename "$dir")
+            manifest="$dir/.claude-plugin/plugin.json"
+            if [ ! -f "$manifest" ]; then
+              echo "Skipping $name: no plugin.json"
+              continue
+            fi
+
+            version=$(node -p "require('./$manifest').version")
+            tag="${name}--v${version}"
+
+            if git rev-parse -q --verify "refs/tags/$tag" >/dev/null; then
+              echo "$name: $tag already exists, nothing to do"
+              continue
+            fi
+
+            echo "$name: creating new tag $tag"
+            claude plugin tag "$dir" --push -m "Release %s"
+          done
