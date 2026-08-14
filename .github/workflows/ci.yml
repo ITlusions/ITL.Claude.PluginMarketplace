@@ -1,0 +1,138 @@
+name: CI
+
+# Single entry-point pipeline for this marketplace. Discovers every plugin
+# under plugins/*/ at runtime, then:
+#   1. validate  — matrix over [marketplace root, every discovered plugin],
+#                  each call delegated to the reusable _validate.yml template
+#   2. version + tag (master pushes only) — for each plugin whose directory
+#                  changed since its last tag, computes the next semver from
+#                  conventional-commit messages, bumps plugin.json, commits,
+#                  and tags via `claude plugin tag`. Runs as one sequential
+#                  job (not a matrix) because each iteration commits+pushes
+#                  to master and needs to build an aggregated list for the
+#                  release stage — GitHub Actions matrix *job* outputs don't
+#                  aggregate across instances, only workflow_call outputs do.
+#                  The per-plugin version logic itself is a shared script
+#                  (.github/scripts/bump-plugin-version.sh), not duplicated.
+#   3. release   — matrix over every plugin tagged in step 2, each call
+#                  delegated to the reusable _release.yml template.
+#
+# Adding a new plugin under plugins/<name>/ requires no changes to this file
+# — discovery, validation, versioning, and release all scale automatically.
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    outputs:
+      plugins: ${{ steps.list.outputs.plugins }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Discover plugins
+        id: list
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          plugins="[]"
+          for dir in plugins/*/; do
+            name=$(basename "$dir")
+            if [ -f "${dir}.claude-plugin/plugin.json" ]; then
+              plugins=$(node -p "JSON.stringify([...$plugins, '$name'])")
+            fi
+          done
+          echo "plugins=$plugins" >> "$GITHUB_OUTPUT"
+          echo "Discovered plugins: $plugins"
+
+  validate-marketplace:
+    needs: discover
+    uses: ./.github/workflows/_validate.yml
+    with:
+      path: "."
+
+  validate-plugins:
+    needs: discover
+    if: needs.discover.outputs.plugins != '[]'
+    strategy:
+      matrix:
+        plugin: ${{ fromJson(needs.discover.outputs.plugins) }}
+    uses: ./.github/workflows/_validate.yml
+    with:
+      path: plugins/${{ matrix.plugin }}
+
+  version-and-tag:
+    needs: [discover, validate-marketplace, validate-plugins]
+    if: >
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/master' &&
+      needs.discover.outputs.plugins != '[]'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      tagged: ${{ steps.loop.outputs.tagged }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: master
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install Claude Code CLI
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Configure git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Version, bump, and tag every plugin that changed
+        id: loop
+        run: |
+          set -euo pipefail
+          plugins='${{ needs.discover.outputs.plugins }}'
+          tagged="[]"
+
+          for name in $(node -p "JSON.parse(process.argv[1]).join(' ')" "$plugins"); do
+            result=$(bash .github/scripts/bump-plugin-version.sh "$name")
+            changed=$(grep '^changed=' <<< "$result" | cut -d= -f2)
+
+            if [ "$changed" != "true" ]; then
+              continue
+            fi
+
+            version=$(grep '^version=' <<< "$result" | cut -d= -f2)
+            tag=$(grep '^tag=' <<< "$result" | cut -d= -f2)
+
+            git add "plugins/$name/.claude-plugin/plugin.json"
+            git commit -m "chore($name): bump version to $version [skip ci]"
+
+            claude plugin tag "plugins/$name" --push -m "Release %s"
+            git push origin master
+
+            tagged=$(node -p "JSON.stringify([...$tagged, {name: '$name', version: '$version', tag: '$tag'}])")
+          done
+
+          echo "tagged=$tagged" >> "$GITHUB_OUTPUT"
+          echo "Tagged: $tagged"
+
+  release:
+    needs: version-and-tag
+    if: needs.version-and-tag.outputs.tagged != '[]'
+    strategy:
+      matrix:
+        plugin: ${{ fromJson(needs.version-and-tag.outputs.tagged) }}
+    uses: ./.github/workflows/_release.yml
+    with:
+      plugin_name: ${{ matrix.plugin.name }}
+      version: ${{ matrix.plugin.version }}
+      tag: ${{ matrix.plugin.tag }}
+    permissions:
+      contents: write

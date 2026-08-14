@@ -58,14 +58,30 @@ machines to pick up the change.
 
 ## CI/CD
 
-Three GitHub Actions workflows handle validation, versioning, and release automatically.
+One pipeline, `.github/workflows/ci.yml`, built from reusable templates. It discovers every
+plugin under `plugins/*/` at runtime — **adding a new plugin needs zero pipeline changes.**
 **The pipeline owns `version` in every `plugin.json` — don't hand-edit it.**
 
-| Workflow | Trigger | Does |
-|---|---|---|
-| `validate.yml` | every push/PR, any branch | `claude plugin validate --strict` on the marketplace manifest and every `plugins/*/` |
-| `tag.yml` | after `validate.yml` succeeds on `master` | for each plugin: if its files changed since its last tag, computes the next semver from conventional-commit messages touching that plugin's directory, writes it into `plugin.json`, commits, and tags via `claude plugin tag` |
-| `release.yml` | invoked directly by `tag.yml` for each plugin just tagged (also runs standalone on a manually pushed `*--v*` tag) | re-validates the tagged plugin, zips it, and publishes a GitHub Release with the zip attached |
+```
+ci.yml (single entry point, runs on every push/PR)
+├─ discover           finds every plugins/*/ with a plugin.json
+├─ validate-marketplace   ─┐
+├─ validate-plugins  (matrix)├─ both call the reusable _validate.yml template
+├─ version-and-tag    master-branch pushes only; sequential (not matrix — it
+│                      commits+pushes per plugin and builds the aggregated
+│                      list the release stage needs). Per-plugin semver
+│                      logic lives in .github/scripts/bump-plugin-version.sh,
+│                      called once per changed plugin, not duplicated inline.
+└─ release            (matrix over every plugin just tagged) calls the
+                       reusable _release.yml template
+```
+
+| File | Role |
+|---|---|
+| `ci.yml` | the only workflow you watch/trigger; orchestrates everything below |
+| `_validate.yml` | reusable (`workflow_call`) — `claude plugin validate --strict` on one path |
+| `_release.yml` | reusable (`workflow_call`, also `push: tags` + `workflow_dispatch` as fallbacks) — zips a tagged plugin and publishes a GitHub Release |
+| `scripts/bump-plugin-version.sh` | shared per-plugin version-bump logic, called from `version-and-tag` |
 
 **To ship a new version**: just commit changes under `plugins/<name>/` to `master` using a
 [conventional commit](https://www.conventionalcommits.org/) prefix, and push:

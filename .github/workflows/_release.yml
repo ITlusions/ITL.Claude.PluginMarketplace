@@ -1,20 +1,21 @@
-name: Publish Release
+name: _release
 
-# Publishes a GitHub Release for one plugin: re-validates it, zips it, and
-# attaches the zip — giving a stable HTTPS download URL usable with
-# `claude --plugin-url <release-asset-url>`.
+# Reusable template: publishes a GitHub Release for one plugin — re-validates
+# it, zips it, and attaches the zip, giving a stable HTTPS download URL
+# usable with `claude --plugin-url <release-asset-url>`.
 #
 # Three ways to trigger:
-#   1. workflow_call — invoked directly by tag.yml right after it creates a
-#      tag, in the same run. This is the primary path: a tag pushed with the
-#      default GITHUB_TOKEN does NOT trigger other workflows (GitHub's
-#      loop-prevention), so tag.yml calls this one explicitly instead of
+#   1. workflow_call — invoked directly by ci.yml's version-and-tag job right
+#      after it tags a plugin, in the same run, via a matrix over every
+#      plugin that was tagged. This is the primary path: a tag pushed with
+#      the default GITHUB_TOKEN does NOT trigger other workflows (GitHub's
+#      loop-prevention), so ci.yml calls this one explicitly instead of
 #      relying on the tag-push trigger below to fire it.
 #   2. push: tags — fallback for a tag pushed manually (e.g. a human with
 #      their own PAT/SSH key running `claude plugin tag --push` locally).
 #   3. workflow_dispatch — manual recovery: re-run the release for a tag
 #      that already exists but whose release never got created (e.g. this
-#      job failed after tagging succeeded). `gh workflow run release.yml
+#      job failed after tagging succeeded). `gh workflow run _release.yml
 #      -f plugin_name=... -f version=... -f tag=...`
 
 on:
