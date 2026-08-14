@@ -323,6 +323,12 @@ All notebooks live at `notebooks/` (relative to this skill's own directory).
 5. If execution errors: read the traceback in the output cell, fix inputs/params, retry
 ```
 
+**If `jupyter nbconvert` / `nbconvert` isn't installed** (observed on some machines — check with
+`jupyter nbconvert --version` before assuming it's available): don't fail the analysis. Fall back
+to replicating the notebook's formulas directly in a one-off Python snippet via `Bash` (position
+sizing, R:R, pivot/Fibonacci math are all simple enough to reproduce inline), and say plainly that
+notebook execution was skipped and results were computed directly instead.
+
 ### Error Handling
 - If notebook execution fails: read the error output first, then suggest a fix (missing package, bad parameter, etc.)
 - If web fetch fails: try alternate source (Yahoo → FinViz)
