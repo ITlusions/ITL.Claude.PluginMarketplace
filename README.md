@@ -58,23 +58,27 @@ machines to pick up the change.
 
 ## CI/CD
 
-One pipeline, `.github/workflows/pipeline.yml`, with the same `ci` + `publish` shape used across
-ITLusions repos (e.g. `ITL.Braincell.SDK/pipeline.yml`) — both jobs are thin `uses:` wrappers
-around reusable templates centralized in
-[ITlusions/ITL.Github](https://github.com/ITlusions/ITL.Github):
+One pipeline, `.github/workflows/pipeline.yml`, agnostic to which plugins exist — it discovers
+every `plugins/*/` with a `plugin.json` at runtime, so **adding a new plugin needs zero pipeline
+changes**: just add the directory and it's automatically validated, versioned, and released.
+`ci`/`ci-marketplace` and `publish` are thin `uses:` wrappers around reusable templates
+centralized in [ITlusions/ITL.Github](https://github.com/ITlusions/ITL.Github) — the same
+`ci` + `publish` shape used across ITLusions repos (e.g. `ITL.Braincell.SDK/pipeline.yml`).
 
 | Job | Calls | Does |
 |---|---|---|
-| `ci` | `_reusable-claude-plugins-ci.yml` (matrix: marketplace root + each plugin) | `claude plugin validate --strict` |
-| `publish` | `_reusable-claude-plugins-publish.yml` (matrix, `master` pushes only) | per plugin: compute next semver from conventional commits touching its directory, bump `plugin.json`, commit, tag via `claude plugin tag`, then zip + publish a GitHub Release — idempotent, safe to run on every push |
+| `discover` | *(local)* | finds every `plugins/*/` with a `plugin.json`, outputs the list |
+| `ci-marketplace` | `_reusable-claude-plugins-ci.yml`, path `.` | validates `marketplace.json` |
+| `ci` | `_reusable-claude-plugins-ci.yml` (matrix over discovered plugins) | `claude plugin validate --strict` per plugin |
+| `publish` | `_reusable-claude-plugins-publish.yml` (matrix over discovered plugins, `master` pushes only) | per plugin: compute next semver from conventional commits touching its directory, bump `plugin.json`, commit, tag via `claude plugin tag`, then zip + publish a GitHub Release — idempotent, safe to run on every push |
 
 **The pipeline owns `version` in every `plugin.json` — don't hand-edit it.** A plugin with no tag
 yet keeps whatever version is currently committed as its v1 baseline; every bump after that is
 pipeline-owned.
 
-**Adding a new plugin**: add one entry to the `matrix.plugin` list in both the `ci` and `publish`
-jobs of `pipeline.yml` (and to `path:` in `ci` if you want it explicit) — everything else scales
-automatically via the shared templates.
+**Adding a new plugin**: create `plugins/<name>/.claude-plugin/plugin.json` (+ `agents/`/`skills/`
+as needed), add its entry to the root `marketplace.json`, commit. `discover` picks it up
+automatically — no `pipeline.yml` edits.
 
 **To ship a new version**: just commit changes under `plugins/<name>/` to `master` using a
 [conventional commit](https://www.conventionalcommits.org/) prefix, and push:

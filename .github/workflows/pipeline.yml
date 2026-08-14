@@ -1,5 +1,10 @@
 name: Pipeline
 
+# Agnostic to which plugins exist — `discover` finds every plugins/*/ with a
+# plugin.json at runtime, so adding a new plugin needs zero changes here.
+# `ci`/`ci-marketplace` and `publish` are thin matrix wrappers around the
+# reusable templates centralized in ITlusions/ITL.Github.
+
 on:
   pull_request:
     branches: [ master ]
@@ -8,24 +13,49 @@ on:
   workflow_dispatch:
 
 jobs:
+  discover:
+    runs-on: ubuntu-latest
+    outputs:
+      plugins: ${{ steps.list.outputs.plugins }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: list
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          plugins="[]"
+          for dir in plugins/*/; do
+            name=$(basename "$dir")
+            if [ -f "${dir}.claude-plugin/plugin.json" ]; then
+              plugins=$(node -p "JSON.stringify([...$plugins, '$name'])")
+            fi
+          done
+          echo "plugins=$plugins" >> "$GITHUB_OUTPUT"
+          echo "Discovered plugins: $plugins"
+
+  ci-marketplace:
+    uses: ITlusions/ITL.Github/.github/workflows/_reusable-claude-plugins-ci.yml@v0.2.13
+    with:
+      path: "."
+
   ci:
+    needs: discover
+    if: needs.discover.outputs.plugins != '[]'
     strategy:
       matrix:
-        # "." validates the marketplace root (marketplace.json); everything
-        # after that is one entry per plugin under plugins/
-        path: [ ".", "plugins/nexustrade-plugin" ]
-    uses: ITlusions/ITL.Github/.github/workflows/_reusable-claude-plugins-ci.yml@v0.2.12
+        plugin: ${{ fromJson(needs.discover.outputs.plugins) }}
+    uses: ITlusions/ITL.Github/.github/workflows/_reusable-claude-plugins-ci.yml@v0.2.13
     with:
-      path: ${{ matrix.path }}
+      path: plugins/${{ matrix.plugin }}
 
   publish:
-    needs: [ ci ]
-    if: github.ref == 'refs/heads/master'
+    needs: [ discover, ci-marketplace, ci ]
+    if: github.ref == 'refs/heads/master' && needs.discover.outputs.plugins != '[]'
     strategy:
       max-parallel: 1   # each call commits + pushes to master; keep serialized
       matrix:
-        plugin: [ nexustrade-plugin ]
-    uses: ITlusions/ITL.Github/.github/workflows/_reusable-claude-plugins-publish.yml@v0.2.12
+        plugin: ${{ fromJson(needs.discover.outputs.plugins) }}
+    uses: ITlusions/ITL.Github/.github/workflows/_reusable-claude-plugins-publish.yml@v0.2.13
     with:
       component-path: plugins/${{ matrix.plugin }}
       component-name: ${{ matrix.plugin }}
