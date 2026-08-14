@@ -1,0 +1,15 @@
+{
+  "name": "itl-claude-tools",
+  "description": "Niels Weistra's private Claude Code plugin collection — custom agents and skills, starting with NexusTrade quantitative trading analysis.",
+  "owner": {
+    "name": "Niels Weistra",
+    "email": "n.weistra@itlusions.nl"
+  },
+  "plugins": [
+    {
+      "name": "nexustrade-plugin",
+      "source": "./plugins/nexustrade-plugin",
+      "description": "Quantitative trading analysis toolkit: 7-step technical/fundamental analysis, position sizing, risk/reward validation, and adversarial risk review agents with 1% risk-rule enforcement."
+    }
+  ]
+}
