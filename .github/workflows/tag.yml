@@ -3,8 +3,10 @@ name: Auto-Tag Plugin Releases
 # Runs after Validate succeeds on master. For each plugin, compares the
 # version in plugin.json against existing git tags (named {plugin}--v{version},
 # the convention enforced by `claude plugin tag`). If a plugin's version was
-# bumped and has no matching tag yet, creates and pushes one — which in turn
-# triggers release.yml.
+# bumped and has no matching tag yet, creates and pushes one, then directly
+# invokes release.yml (as a reusable workflow) for it in this same run —
+# a tag pushed with the default GITHUB_TOKEN does not trigger other
+# workflows via push, so we call it explicitly rather than relying on that.
 
 on:
   workflow_run:
@@ -19,6 +21,8 @@ jobs:
   tag:
     if: github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
+    outputs:
+      tagged: ${{ steps.tag.outputs.tagged }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -41,9 +45,11 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Tag plugins whose version changed
+        id: tag
         run: |
           set -euo pipefail
           shopt -s nullglob
+          tagged="[]"
           for dir in plugins/*/; do
             name=$(basename "$dir")
             manifest="$dir/.claude-plugin/plugin.json"
@@ -62,4 +68,20 @@ jobs:
 
             echo "$name: creating new tag $tag"
             claude plugin tag "$dir" --push -m "Release %s"
+            tagged=$(node -p "JSON.stringify([...$tagged, {name: '$name', version: '$version', tag: '$tag'}])")
           done
+          echo "tagged=$tagged" >> "$GITHUB_OUTPUT"
+
+  release:
+    needs: tag
+    if: needs.tag.outputs.tagged != '[]'
+    strategy:
+      matrix:
+        plugin: ${{ fromJson(needs.tag.outputs.tagged) }}
+    uses: ./.github/workflows/release.yml
+    with:
+      plugin_name: ${{ matrix.plugin.name }}
+      version: ${{ matrix.plugin.version }}
+      tag: ${{ matrix.plugin.tag }}
+    permissions:
+      contents: write

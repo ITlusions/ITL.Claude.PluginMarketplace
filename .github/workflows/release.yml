@@ -1,14 +1,33 @@
 name: Publish Release
 
-# Fires when tag.yml pushes a {plugin}--v{version} tag. Re-validates the
-# tagged plugin, zips it, and publishes a GitHub Release with the zip
-# attached — giving a stable HTTPS download URL usable with
+# Publishes a GitHub Release for one plugin: re-validates it, zips it, and
+# attaches the zip — giving a stable HTTPS download URL usable with
 # `claude --plugin-url <release-asset-url>`.
+#
+# Two ways to trigger:
+#   1. workflow_call — invoked directly by tag.yml right after it creates a
+#      tag, in the same run. This is the primary path: a tag pushed with the
+#      default GITHUB_TOKEN does NOT trigger other workflows (GitHub's
+#      loop-prevention), so tag.yml calls this one explicitly instead of
+#      relying on the tag-push trigger below to fire it.
+#   2. push: tags — fallback for a tag pushed manually (e.g. a human with
+#      their own PAT/SSH key running `claude plugin tag --push` locally).
 
 on:
   push:
     tags:
       - "*--v*"
+  workflow_call:
+    inputs:
+      plugin_name:
+        required: true
+        type: string
+      version:
+        required: true
+        type: string
+      tag:
+        required: true
+        type: string
 
 permissions:
   contents: write
@@ -20,6 +39,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          ref: ${{ inputs.tag || github.ref }}
 
       - uses: actions/setup-node@v4
         with:
@@ -28,29 +48,49 @@ jobs:
       - name: Install Claude Code CLI
         run: npm install -g @anthropic-ai/claude-code
 
-      - name: Parse plugin name and version from tag
-        id: parse
+      - name: Resolve plugin name/version/tag
+        id: resolve
         run: |
-          tag="${GITHUB_REF#refs/tags/}"
-          name="${tag%--v*}"
-          version="${tag##*--v}"
-          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          if [ "${{ github.event_name }}" = "workflow_call" ]; then
+            name="${{ inputs.plugin_name }}"
+            version="${{ inputs.version }}"
+            tag="${{ inputs.tag }}"
+          else
+            tag="${GITHUB_REF#refs/tags/}"
+            name="${tag%--v*}"
+            version="${tag##*--v}"
+          fi
           echo "name=$name" >> "$GITHUB_OUTPUT"
           echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
 
-      - name: Validate the tagged plugin
-        run: claude plugin validate --strict "plugins/${{ steps.parse.outputs.name }}"
-
-      - name: Zip the plugin
-        run: |
-          cd plugins
-          zip -r "../${{ steps.parse.outputs.name }}-${{ steps.parse.outputs.version }}.zip" "${{ steps.parse.outputs.name }}"
-
-      - name: Create GitHub Release
+      - name: Skip if release already exists
+        id: check
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "${{ steps.parse.outputs.tag }}" \
-            "${{ steps.parse.outputs.name }}-${{ steps.parse.outputs.version }}.zip" \
-            --title "${{ steps.parse.outputs.name }} v${{ steps.parse.outputs.version }}" \
+          if gh release view "${{ steps.resolve.outputs.tag }}" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Validate the tagged plugin
+        if: steps.check.outputs.exists == 'false'
+        run: claude plugin validate --strict "plugins/${{ steps.resolve.outputs.name }}"
+
+      - name: Zip the plugin
+        if: steps.check.outputs.exists == 'false'
+        run: |
+          cd plugins
+          zip -r "../${{ steps.resolve.outputs.name }}-${{ steps.resolve.outputs.version }}.zip" "${{ steps.resolve.outputs.name }}"
+
+      - name: Create GitHub Release
+        if: steps.check.outputs.exists == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ steps.resolve.outputs.tag }}" \
+            "${{ steps.resolve.outputs.name }}-${{ steps.resolve.outputs.version }}.zip" \
+            --title "${{ steps.resolve.outputs.name }} v${{ steps.resolve.outputs.version }}" \
             --generate-notes
