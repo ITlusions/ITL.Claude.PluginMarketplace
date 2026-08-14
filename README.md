@@ -50,21 +50,35 @@ claude plugin validate --strict plugins/<plugin-name>
 claude plugin validate --strict .
 ```
 
-Bump `version` in the plugin's `plugin.json` on every content change — that's what triggers
-`/plugin marketplace update itl-claude-tools` to actually pick up changes on other machines.
+Set an initial `"version": "1.0.0"` in the new plugin's `plugin.json` — that's its one-time
+manual baseline. From then on the CI pipeline (see below) computes and bumps the version itself
+on every commit that touches the plugin's directory; don't hand-edit `version` after that.
+After the pipeline tags a new version, run `/plugin marketplace update itl-claude-tools` on other
+machines to pick up the change.
 
 ## CI/CD
 
-Three GitHub Actions workflows handle validation and release automatically:
+Three GitHub Actions workflows handle validation, versioning, and release automatically.
+**The pipeline owns `version` in every `plugin.json` — don't hand-edit it.**
 
 | Workflow | Trigger | Does |
 |---|---|---|
 | `validate.yml` | every push/PR, any branch | `claude plugin validate --strict` on the marketplace manifest and every `plugins/*/` |
-| `tag.yml` | after `validate.yml` succeeds on `master` | for each plugin, compares `plugin.json`'s `version` against existing `{plugin}--v{version}` git tags; if it changed, creates and pushes a new tag via `claude plugin tag` |
-| `release.yml` | push of a `*--v*` tag (i.e. triggered by `tag.yml`) | re-validates the tagged plugin, zips it, and publishes a GitHub Release with the zip attached |
+| `tag.yml` | after `validate.yml` succeeds on `master` | for each plugin: if its files changed since its last tag, computes the next semver from conventional-commit messages touching that plugin's directory, writes it into `plugin.json`, commits, and tags via `claude plugin tag` |
+| `release.yml` | invoked directly by `tag.yml` for each plugin just tagged (also runs standalone on a manually pushed `*--v*` tag) | re-validates the tagged plugin, zips it, and publishes a GitHub Release with the zip attached |
 
-**To ship a new version**: bump `version` in the plugin's `plugin.json`, commit, push to `master`.
-The pipeline tags and releases it automatically — no manual `git tag`/`gh release` needed.
+**To ship a new version**: just commit changes under `plugins/<name>/` to `master` using a
+[conventional commit](https://www.conventionalcommits.org/) prefix, and push:
+
+| Commit message touches the plugin dir | Bump |
+|---|---|
+| `feat!: ...` or contains a `BREAKING CHANGE` footer | major |
+| `feat: ...` / `feat(scope): ...` | minor |
+| anything else (`fix:`, `chore:`, `docs:`, no changes) | patch (or skipped if nothing changed) |
+
+No manual `git tag`, `gh release`, or `plugin.json` edits needed — the pipeline computes the
+version, bumps it, tags it, and releases it in one run. A plugin with no tag yet keeps whatever
+version is currently committed as its v1 baseline; every bump after that is pipeline-owned.
 
 Release zip URLs (`https://github.com/ITlusions/ITL.Claude.PluginMarketplace/releases/download/...`)
 are usable directly with `claude --plugin-url <url>` for one-off session loads, in addition to the
