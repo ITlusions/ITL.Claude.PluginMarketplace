@@ -105,30 +105,9 @@ BREAK-EVEN SCENARIOS
 
 ## Trading Journal Format
 
-When the user requests `/journal [trade]`, output this JSON format and offer to append it to `trades.json`:
-
-```json
-{
-  "id": "TRADE-XXX",
-  "date": "YYYY-MM-DD",
-  "ticker": "[TICKER]",
-  "side": "LONG / SHORT",
-  "entry": X.XX,
-  "stop_loss": X.XX,
-  "target_1": X.XX,
-  "target_2": X.XX,
-  "shares": XXX,
-  "portfolio_size": XXXXX,
-  "risk_pct": 1.0,
-  "thesis": "[1-2 sentence thesis]",
-  "confidence": "low / medium / high",
-  "status": "open / closed",
-  "exit_price": null,
-  "exit_date": null,
-  "pnl": null,
-  "notes": ""
-}
-```
+When the user requests `/journal [trade]`, use the JSON schema defined in this plugin's
+`reference/analysis-framework.md` (resolve relative to the plugin's install location) and offer to
+append it to `trades.json`.
 
 ## Rules
 - Always show unrealized P&L in both $ and %
