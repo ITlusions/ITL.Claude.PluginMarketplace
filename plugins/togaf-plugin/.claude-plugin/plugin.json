@@ -1,0 +1,11 @@
+{
+  "name": "togaf-plugin",
+  "description": "TOGAF 9.2-aligned enterprise architecture advisor, ported from the ITL.Agents Copilot custom agent. Architecture reviews, ADRs, governance frameworks, and TOGAF phase guidance for the ITL Cloud Control Plane and similar multi-cloud, provider-pattern platforms.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Niels Weistra",
+    "email": "n.weistra@itlusions.nl"
+  },
+  "repository": "https://github.com/ITlusions/ITL.Claude.PluginMarketplace",
+  "license": "MIT"
+}

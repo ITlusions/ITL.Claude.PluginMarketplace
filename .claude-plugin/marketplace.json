@@ -15,6 +15,11 @@
       "name": "hello-plugin",
       "source": "./plugins/hello-plugin",
       "description": "Minimal example plugin — a single skill, used to prove the marketplace pipeline scales to multiple plugins without any pipeline changes."
+    },
+    {
+      "name": "togaf-plugin",
+      "source": "./plugins/togaf-plugin",
+      "description": "TOGAF 9.2-aligned enterprise architecture advisor, ported from the ITL.Agents Copilot custom agent. Architecture reviews, ADRs, governance frameworks, and TOGAF phase guidance. Agent: `togaf-architect`."
     }
   ]
 }
