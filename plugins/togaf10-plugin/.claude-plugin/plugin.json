@@ -1,0 +1,11 @@
+{
+  "name": "togaf10-plugin",
+  "description": "Domain-agnostic senior enterprise architect for the TOGAF® Standard, 10th Edition — ADM phase guidance, governance, and a full ADM deliverable checklist with starter templates. Not tied to any specific organization, industry, or tech stack.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Niels Weistra",
+    "email": "n.weistra@itlusions.nl"
+  },
+  "repository": "https://github.com/ITlusions/ITL.Claude.PluginMarketplace",
+  "license": "MIT"
+}

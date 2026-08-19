@@ -15,6 +15,16 @@
       "name": "hello-plugin",
       "source": "./plugins/hello-plugin",
       "description": "Minimal example plugin — a single skill, used to prove the marketplace pipeline scales to multiple plugins without any pipeline changes."
+    },
+    {
+      "name": "togaf-plugin",
+      "source": "./plugins/togaf-plugin",
+      "description": "TOGAF 9.2-aligned enterprise architecture advisor, ported from the ITL.Agents Copilot custom agent. Architecture reviews, ADRs, governance frameworks, and TOGAF phase guidance. Agent: `togaf-architect`."
+    },
+    {
+      "name": "togaf10-plugin",
+      "source": "./plugins/togaf10-plugin",
+      "description": "Domain-agnostic TOGAF® Standard, 10th Edition enterprise architect. Full ADM deliverable checklist plus 13 starter templates (vision, gap analysis, migration roadmap, compliance review, ADRs, etc.). Not tied to any organization or tech stack. Agent: `togaf10-architect`. Skill: `togaf10`."
     }
   ]
 }
