@@ -22,6 +22,7 @@ Or locally, before pushing:
 | [`nexustrade-plugin`](plugins/nexustrade-plugin) | Quantitative trading analysis — 7-step technical/fundamental analysis, position sizing, risk/reward validation, adversarial risk review. Agents: `nexustrade`, `nexustrade-analyst`, `nexustrade-portfolio`, `nexustrade-risk`. Skill: `nexustrade` (methodology + Jupyter calculator notebooks). |
 | [`hello-plugin`](plugins/hello-plugin) | Minimal example plugin (one skill, no agents) — exists to prove the pipeline scales to multiple plugins with zero pipeline changes. |
 | [`togaf-plugin`](plugins/togaf-plugin) | TOGAF 9.2-aligned enterprise architecture advisor, ported from the ITL.Agents Copilot custom agent (`CloudArchitect.agent.md`). Architecture reviews, ADRs, governance frameworks, TOGAF phase guidance for the ITL Cloud Control Plane and similar multi-cloud, provider-pattern platforms. Agent: `togaf-architect`. |
+| [`togaf10-plugin`](plugins/togaf10-plugin) | Domain-agnostic TOGAF® Standard, 10th Edition enterprise architect — not tied to ITL or any specific tech stack. Full ADM deliverable checklist (Preliminary–H plus Requirements Management) and 13 starter templates (Architecture Vision, Statement of Architecture Work, gap analysis, migration roadmap, compliance assessment, ADRs, etc.), inspired by the community [TOGAF-Master-Documenting-Template](https://github.com/JasonTeixeira/TOGAF-Master-Documenting-Template). Agent: `togaf10-architect`. Skill: `togaf10`. |
 
 ## Adding a new plugin
 
