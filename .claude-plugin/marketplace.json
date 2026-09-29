@@ -27,7 +27,7 @@
     },
     {
       "name": "amalia-security-scanner",
-      "source": "./plugins/amalia-security-scanner-plugin",
+      "source": "./plugins/amalia-security-scanner",
       "description": "Automated security vulnerability scanner with SAST, attack surface mapping, binary hardening analysis, memory safety scanning, exploitability assessment, ROP chain analysis, and full ITL Amalia threat intelligence integration. Agent: `amalia-security-engineer`."
     },
     { 
