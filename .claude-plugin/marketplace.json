@@ -17,8 +17,12 @@
       "description": "Minimal example plugin — a single skill, used to prove the marketplace pipeline scales to multiple plugins without any pipeline changes."
     },
     {      "name": "developer",
-      "source": "./plugins/developer-plugin",
+      "source": "./plugins/developer",
       "description": "Software development lifecycle toolkit: Git workflows, CI/CD pipelines, version management, testing strategies, Python code organization, and developer tooling. Agent: `developer`."
+    },
+    {      "name": "itl-cloud-architect",
+      "source": "./plugins/cloud-architect",
+      "description": "Enterprise-grade cloud control plane architecture advisor. Specializes in TOGAF 9.2 frameworks, microservices governance, resource provider patterns, and cloud-native platform engineering for the ITL Cloud Control Plane. Agent: `cloud-architect`."
     },
     {      "name": "togaf-plugin",
       "source": "./plugins/togaf-plugin",
