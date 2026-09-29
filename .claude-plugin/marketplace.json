@@ -25,6 +25,11 @@
       "source": "./plugins/itl-cloud-architect",
       "description": "Enterprise-grade cloud control plane architecture advisor. Specializes in TOGAF 9.2 frameworks, microservices governance, resource provider patterns, and cloud-native platform engineering for the ITL Cloud Control Plane. Agent: `cloud-architect`."
     },
+    {
+      "name": "amalia-security-scanner",
+      "source": "./plugins/amalia-security-scanner-plugin",
+      "description": "Automated security vulnerability scanner with SAST, attack surface mapping, binary hardening analysis, memory safety scanning, exploitability assessment, ROP chain analysis, and full ITL Amalia threat intelligence integration. Agent: `amalia-security-engineer`."
+    },
     { 
       "name": "togaf-plugin",
       "source": "./plugins/togaf-plugin",

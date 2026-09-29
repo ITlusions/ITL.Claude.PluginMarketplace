@@ -1,0 +1,11 @@
+{
+  "name": "amalia-security-engineer",
+  "description": "Automated security vulnerability scanner with SAST, attack surface mapping, binary hardening analysis, memory safety scanning, exploitability assessment, ROP chain analysis, and full ITL Amalia threat intelligence platform integration. Powered by vuln_scanner engine, angr binary analysis, angrop chain builder, and Amalia CLI.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Niels Weistra",
+    "email": "n.weistra@itlusions.nl"
+  },
+  "repository": "https://github.com/ITlusions/ITL.Claude.PluginMarketplace",
+  "license": "MIT"
+}
