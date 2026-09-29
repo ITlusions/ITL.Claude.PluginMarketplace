@@ -1,0 +1,11 @@
+{
+  "name": "itl-cloud-architect",
+  "description": "Enterprise-grade cloud control plane architecture advisor. Specializes in TOGAF 9.2 frameworks, microservices governance, resource provider patterns, and cloud-native platform engineering for the ITL Cloud Control Plane.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Niels Weistra",
+    "email": "n.weistra@itlusions.nl"
+  },
+  "repository": "https://github.com/ITlusions/ITL.Claude.PluginMarketplace",
+  "license": "MIT"
+}

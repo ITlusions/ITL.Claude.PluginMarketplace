@@ -1,0 +1,11 @@
+{
+  "name": "developer",
+  "description": "Software development lifecycle toolkit: Git workflows, CI/CD pipelines, version management, testing strategies, Python code organization, and developer tooling. Ported from the ITL.Agents Copilot Developer custom agent.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Niels Weistra",
+    "email": "n.weistra@itlusions.nl"
+  },
+  "repository": "https://github.com/ITlusions/ITL.Claude.PluginMarketplace",
+  "license": "MIT"
+}
