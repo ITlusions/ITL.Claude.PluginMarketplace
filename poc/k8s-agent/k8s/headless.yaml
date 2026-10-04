@@ -1,0 +1,30 @@
+# Headless add-on for agent.yaml. Apply after it, then switch the Deployment to headless:
+#   kubectl -n itl-agent create secret generic itl-poc-agent-auth \
+#     --from-literal=CLAUDE_CODE_OAUTH_TOKEN=... \      # or ANTHROPIC_API_KEY=...
+#     --from-literal=CONTROL_TOKEN="$(openssl rand -hex 32)"
+#   kubectl -n itl-agent set env deploy/itl-poc-agent MODE=headless
+apiVersion: v1
+kind: Service
+metadata:
+  name: itl-poc-agent
+  namespace: itl-agent
+spec:
+  selector: {app: itl-poc-agent}
+  ports:
+    - {name: http, port: 8080, targetPort: 8080}
+---
+# NetworkPolicies are additive: this opens ingress on 8080 from the same namespace only.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: itl-poc-agent-control
+  namespace: itl-agent
+spec:
+  podSelector:
+    matchLabels: {app: itl-poc-agent}
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - podSelector: {}
+      ports:
+        - {protocol: TCP, port: 8080}

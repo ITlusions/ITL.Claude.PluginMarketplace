@@ -9,8 +9,20 @@ agent:
   marketplaceName: itl-claude-tools
   pluginName: hello-plugin
 
-# Name of an existing Secret with CLAUDE_CODE_OAUTH_TOKEN / ANTHROPIC_API_KEY (optional).
+# remote   = Remote Control session (needs one-time interactive /login)
+# headless = HTTP control API (POST /run) authenticated with a token/API key; no login step
+mode: remote
+
+# Existing Secret holding CLAUDE_CODE_OAUTH_TOKEN or ANTHROPIC_API_KEY, plus CONTROL_TOKEN (>=16 chars)
+# in headless mode. Required when mode=headless.
 authSecret: ""
+
+headless:
+  port: 8080
+  allowedTools: "Read,Glob,Grep"   # unattended runs cannot answer permission prompts
+  runTimeoutSeconds: 600
+  # Extra namespaces/pods allowed to reach the API; same-namespace pods are always allowed.
+  allowFromNamespaces: []
 
 persistence:
   size: 1Gi

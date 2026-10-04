@@ -7,6 +7,7 @@ MARKETPLACE_SOURCE="${MARKETPLACE_SOURCE:-https://github.com/ITlusions/ITL.Claud
 MARKETPLACE_NAME="${MARKETPLACE_NAME:-itl-claude-tools}"
 PLUGIN_NAME="${PLUGIN_NAME:-hello-plugin}"
 AGENT_NAME="${AGENT_NAME:-itl-poc-agent}"
+MODE="${MODE:-remote}"   # remote = Remote Control (needs interactive login) | headless = HTTP API + token/API-key auth
 
 mkdir -p "$HOME/workspace"
 cd "$HOME/workspace"
@@ -15,6 +16,14 @@ cd "$HOME/workspace"
 claude plugin marketplace add "$MARKETPLACE_SOURCE" || claude plugin marketplace update "$MARKETPLACE_NAME" || true
 claude plugin install "${PLUGIN_NAME}@${MARKETPLACE_NAME}" || echo "plugin already installed or install failed (see above)"
 claude plugin list || true
+
+if [ "$MODE" = "headless" ]; then
+  if [ -z "${CLAUDE_CODE_OAUTH_TOKEN:-}" ] && [ -z "${ANTHROPIC_API_KEY:-}" ]; then
+    echo "headless mode needs CLAUDE_CODE_OAUTH_TOKEN or ANTHROPIC_API_KEY (via the auth Secret)." >&2
+    exit 1
+  fi
+  exec node /opt/agent/server.js
+fi
 
 # Login is one-time and persisted in $HOME/.claude on the PVC (see README: `kubectl exec ... claude`).
 if [ ! -s "$HOME/.claude/.credentials.json" ] && [ -z "${CLAUDE_CODE_OAUTH_TOKEN:-}" ] && [ -z "${ANTHROPIC_API_KEY:-}" ]; then

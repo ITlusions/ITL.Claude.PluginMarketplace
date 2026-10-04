@@ -27,6 +27,15 @@ spec:
             - {name: MARKETPLACE_NAME, value: {{ .Values.agent.marketplaceName | quote }}}
             - {name: PLUGIN_NAME, value: {{ .Values.agent.pluginName | quote }}}
             - {name: AGENT_NAME, value: {{ .Values.agent.name | quote }}}
+            - {name: MODE, value: {{ .Values.mode | quote }}}
+            {{- if eq .Values.mode "headless" }}
+            - {name: PORT, value: {{ .Values.headless.port | quote }}}
+            - {name: ALLOWED_TOOLS, value: {{ .Values.headless.allowedTools | quote }}}
+            - {name: RUN_TIMEOUT_SECONDS, value: {{ .Values.headless.runTimeoutSeconds | quote }}}
+            {{- end }}
+          {{- if and (eq .Values.mode "headless") (not .Values.authSecret) }}
+          {{- fail "mode=headless requires authSecret (Secret with CLAUDE_CODE_OAUTH_TOKEN/ANTHROPIC_API_KEY and CONTROL_TOKEN)" }}
+          {{- end }}
           {{- if .Values.authSecret }}
           envFrom:
             - secretRef: {name: {{ .Values.authSecret }}}

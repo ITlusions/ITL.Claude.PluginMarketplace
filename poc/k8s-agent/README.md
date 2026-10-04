@@ -44,6 +44,36 @@ Headless alternative: run `claude setup-token` on your laptop, store it as secre
 `itl-poc-agent-auth` (key `CLAUDE_CODE_OAUTH_TOKEN`). Note: Remote Control may require a full
 claude.ai login rather than an inference-only token — if it refuses, use the `/login` route.
 
+## Headless mode (no interactive login)
+
+`MODE=headless` skips Remote Control and the `/login` step. Auth comes from a Secret, and the
+agent is controlled through a small HTTP API (`server.js`) that wraps `claude -p`.
+
+```bash
+kubectl apply -f poc/k8s-agent/k8s/headless.yaml
+kubectl -n itl-agent create secret generic itl-poc-agent-auth \
+  --from-literal=CLAUDE_CODE_OAUTH_TOKEN=<from `claude setup-token`> \   # or ANTHROPIC_API_KEY=...
+  --from-literal=CONTROL_TOKEN="$(openssl rand -hex 32)"
+kubectl -n itl-agent set env deploy/itl-poc-agent MODE=headless
+```
+
+Helm: `--set mode=headless --set authSecret=itl-poc-agent-auth` (same Secret keys).
+
+Use it:
+
+```bash
+kubectl -n itl-agent port-forward svc/itl-poc-agent 8080:8080 &
+curl -H "Authorization: Bearer $CONTROL_TOKEN" -d '{"prompt":"List the installed plugins and what they do"}' localhost:8080/run
+# continue a conversation: add "session_id": "<session_id from the previous result>"
+```
+
+- One run at a time (`429` when busy); `RUN_TIMEOUT_SECONDS` kills long runs.
+- Unattended runs cannot answer permission prompts, so only `ALLOWED_TOOLS` (default `Read,Glob,Grep`)
+  are permitted. Widen it deliberately (e.g. `Bash(git:*)`), since anyone with the control token can run it.
+- The pod refuses to start without `CONTROL_TOKEN` (>=16 chars) and a Claude credential.
+- Ingress is open on 8080 for same-namespace pods only (`headless.allowFromNamespaces` in Helm to extend).
+  The API is plain HTTP: put TLS/ingress auth in front of it before exposing it outside the cluster.
+
 ## Control it
 
 - Remote: open the Claude app → Code → the session named `itl-poc-agent`.

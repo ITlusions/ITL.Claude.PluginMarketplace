@@ -11,6 +11,7 @@ RUN npm install -g @anthropic-ai/claude-code@${CLAUDE_CODE_VERSION}
 # Non-root user; HOME lives on a PVC in the cluster so login + installed plugins survive restarts
 RUN useradd -m -u 1000 -s /bin/bash agent
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+COPY server.js /opt/agent/server.js
 RUN chmod +x /usr/local/bin/entrypoint.sh
 USER agent
 WORKDIR /home/agent/workspace
