@@ -22,12 +22,17 @@ spec:
         - name: agent
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- if eq .Values.agent.remoteStyle "interactive" }}
+          stdin: true
+          tty: true
+          {{- end }}
           env:
             - {name: MARKETPLACE_SOURCE, value: {{ .Values.agent.marketplaceSource | quote }}}
             - {name: MARKETPLACE_NAME, value: {{ .Values.agent.marketplaceName | quote }}}
             - {name: PLUGIN_NAME, value: {{ .Values.agent.pluginName | quote }}}
             - {name: AGENT_NAME, value: {{ .Values.agent.name | quote }}}
             - {name: MODE, value: {{ .Values.mode | quote }}}
+            - {name: REMOTE_STYLE, value: {{ .Values.agent.remoteStyle | quote }}}
             {{- if eq .Values.mode "headless" }}
             - {name: PORT, value: {{ .Values.headless.port | quote }}}
             - {name: ALLOWED_TOOLS, value: {{ .Values.headless.allowedTools | quote }}}

@@ -74,6 +74,19 @@ curl -H "Authorization: Bearer $CONTROL_TOKEN" -d '{"prompt":"List the installed
 - Ingress is open on 8080 for same-namespace pods only (`headless.allowFromNamespaces` in Helm to extend).
   The API is plain HTTP: put TLS/ingress auth in front of it before exposing it outside the cluster.
 
+## Remote Control from the Claude app
+
+This is the default (`mode: remote`). After the one-time `/login` above, the pod runs
+`claude remote-control --name itl-poc-agent` and the session appears in the Claude app / claude.ai/code
+(Code tab) under that name; you chat with the agent, approve tool prompts and see output from there.
+
+- The login must be a full claude.ai login (`/login`), not a `setup-token`/API-key credential.
+- `REMOTE_STYLE=interactive` runs `claude --remote-control <name>` instead (a normal interactive session
+  with Remote Control on; the manifests/chart then set `stdin`+`tty`). Use it if server style misbehaves on your CLI version.
+- Not verified here: this cloud sandbox can't run Remote Control. Check the exact flags with
+  `kubectl exec deploy/itl-poc-agent -- claude remote-control --help`.
+- The agent runs tools inside the pod: tool prompts you approve in the app execute there.
+
 ## Control it
 
 - Remote: open the Claude app → Code → the session named `itl-poc-agent`.

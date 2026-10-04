@@ -40,11 +40,14 @@ spec:
         - name: agent
           image: ghcr.io/itlusions/itl-poc-agent:latest   # build & push from poc/k8s-agent
           imagePullPolicy: Always
+          # stdin: true        # needed only for REMOTE_STYLE=interactive
+          # tty: true
           env:
             - {name: MARKETPLACE_SOURCE, value: "https://github.com/ITlusions/ITL.Claude.PluginMarketplace.git"}
             - {name: MARKETPLACE_NAME, value: "itl-claude-tools"}
             - {name: PLUGIN_NAME, value: "hello-plugin"}
             - {name: AGENT_NAME, value: "itl-poc-agent"}
+            - {name: REMOTE_STYLE, value: "server"}   # or "interactive" (then also uncomment tty/stdin below)
           envFrom:
             - secretRef: {name: itl-poc-agent-auth, optional: true}
           volumeMounts:

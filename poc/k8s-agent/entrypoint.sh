@@ -33,4 +33,11 @@ if [ ! -s "$HOME/.claude/.credentials.json" ] && [ -z "${CLAUDE_CODE_OAUTH_TOKEN
 fi
 
 # Remote Control: shows up in the Claude app / claude.ai/code under this name.
+#   REMOTE_STYLE=server      -> `claude remote-control` (headless server mode, no TTY needed)
+#   REMOTE_STYLE=interactive -> `claude --remote-control <name>` (full session; needs tty+stdin on the container)
+# If one style misbehaves on your CLI version, check `claude remote-control --help` in the pod and switch.
+REMOTE_STYLE="${REMOTE_STYLE:-server}"
+if [ "$REMOTE_STYLE" = "interactive" ]; then
+  exec claude --remote-control "$AGENT_NAME"
+fi
 exec claude remote-control --name "$AGENT_NAME"

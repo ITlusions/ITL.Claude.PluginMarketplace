@@ -4,6 +4,7 @@ image:
   pullPolicy: Always
 
 agent:
+  remoteStyle: server   # server = `claude remote-control`; interactive = `claude --remote-control` (enables tty+stdin)
   name: itl-poc-agent
   marketplaceSource: https://github.com/ITlusions/ITL.Claude.PluginMarketplace.git
   marketplaceName: itl-claude-tools
