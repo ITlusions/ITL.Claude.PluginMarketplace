@@ -1,0 +1,60 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: itl-agent
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: itl-poc-agent-home
+  namespace: itl-agent
+spec:
+  accessModes: [ReadWriteOnce]
+  resources:
+    requests:
+      storage: 1Gi
+---
+# Optional: only needed for headless auth (see README). Create with kubectl, don't commit real values.
+# kubectl -n itl-agent create secret generic itl-poc-agent-auth --from-literal=CLAUDE_CODE_OAUTH_TOKEN=...
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: itl-poc-agent
+  namespace: itl-agent
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate        # RWO volume: never run two pods on it
+  selector:
+    matchLabels: {app: itl-poc-agent}
+  template:
+    metadata:
+      labels: {app: itl-poc-agent}
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+      containers:
+        - name: agent
+          image: ghcr.io/itlusions/itl-poc-agent:latest   # build & push from poc/k8s-agent
+          imagePullPolicy: Always
+          env:
+            - {name: MARKETPLACE_SOURCE, value: "https://github.com/ITlusions/ITL.Claude.PluginMarketplace.git"}
+            - {name: MARKETPLACE_NAME, value: "itl-claude-tools"}
+            - {name: PLUGIN_NAME, value: "hello-plugin"}
+            - {name: AGENT_NAME, value: "itl-poc-agent"}
+          envFrom:
+            - secretRef: {name: itl-poc-agent-auth, optional: true}
+          volumeMounts:
+            - {name: home, mountPath: /home/agent}
+          resources:
+            requests: {cpu: 100m, memory: 256Mi}
+            limits: {cpu: "1", memory: 1Gi}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities: {drop: [ALL]}
+      volumes:
+        - name: home
+          persistentVolumeClaim: {claimName: itl-poc-agent-home}

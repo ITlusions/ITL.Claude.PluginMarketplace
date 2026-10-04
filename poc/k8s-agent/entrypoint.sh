@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+# PoC agent bootstrap: register the marketplace, install the plugin, then expose
+# the session for remote control (Claude app / claude.ai/code).
+set -euo pipefail
+
+MARKETPLACE_SOURCE="${MARKETPLACE_SOURCE:-https://github.com/ITlusions/ITL.Claude.PluginMarketplace.git}"
+MARKETPLACE_NAME="${MARKETPLACE_NAME:-itl-claude-tools}"
+PLUGIN_NAME="${PLUGIN_NAME:-hello-plugin}"
+AGENT_NAME="${AGENT_NAME:-itl-poc-agent}"
+
+mkdir -p "$HOME/workspace"
+cd "$HOME/workspace"
+
+# Idempotent: PVC-backed $HOME means these may already exist after a restart.
+claude plugin marketplace add "$MARKETPLACE_SOURCE" || claude plugin marketplace update "$MARKETPLACE_NAME" || true
+claude plugin install "${PLUGIN_NAME}@${MARKETPLACE_NAME}" || echo "plugin already installed or install failed (see above)"
+claude plugin list || true
+
+# Login is one-time and persisted in $HOME/.claude on the PVC (see README: `kubectl exec ... claude`).
+if [ ! -s "$HOME/.claude/.credentials.json" ] && [ -z "${CLAUDE_CODE_OAUTH_TOKEN:-}" ] && [ -z "${ANTHROPIC_API_KEY:-}" ]; then
+  echo "No credentials yet. Run: kubectl -n itl-agent exec -it deploy/itl-poc-agent -- claude /login"
+  echo "Sleeping so the pod stays up for login..."
+  exec sleep infinity
+fi
+
+# Remote Control: shows up in the Claude app / claude.ai/code under this name.
+exec claude remote-control --name "$AGENT_NAME"
