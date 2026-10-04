@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "itl-poc-agent.name" . }}
+  labels: {{- include "itl-poc-agent.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels: {{- include "itl-poc-agent.labels" . | nindent 6 }}
+  template:
+    metadata:
+      labels: {{- include "itl-poc-agent.labels" . | nindent 8 }}
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+      containers:
+        - name: agent
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - {name: MARKETPLACE_SOURCE, value: {{ .Values.agent.marketplaceSource | quote }}}
+            - {name: MARKETPLACE_NAME, value: {{ .Values.agent.marketplaceName | quote }}}
+            - {name: PLUGIN_NAME, value: {{ .Values.agent.pluginName | quote }}}
+            - {name: AGENT_NAME, value: {{ .Values.agent.name | quote }}}
+          {{- if .Values.authSecret }}
+          envFrom:
+            - secretRef: {name: {{ .Values.authSecret }}}
+          {{- end }}
+          volumeMounts:
+            - {name: home, mountPath: /home/agent}
+          resources: {{- toYaml .Values.resources | nindent 12 }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities: {drop: [ALL]}
+      volumes:
+        - name: home
+          persistentVolumeClaim:
+            claimName: {{ include "itl-poc-agent.name" . }}-home

@@ -58,3 +58,28 @@ spec:
       volumes:
         - name: home
           persistentVolumeClaim: {claimName: itl-poc-agent-home}
+---
+# Default-deny ingress (Remote Control is outbound-only); egress limited to DNS + public HTTPS (Anthropic, GitHub, npm).
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: itl-poc-agent
+  namespace: itl-agent
+spec:
+  podSelector:
+    matchLabels: {app: itl-poc-agent}
+  policyTypes: [Ingress, Egress]
+  ingress: []
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels: {kubernetes.io/metadata.name: kube-system}
+      ports:
+        - {protocol: UDP, port: 53}
+        - {protocol: TCP, port: 53}
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except: [10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 169.254.0.0/16]
+      ports:
+        - {protocol: TCP, port: 443}

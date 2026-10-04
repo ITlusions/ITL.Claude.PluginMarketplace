@@ -1,0 +1,27 @@
+image:
+  repository: ghcr.io/itlusions/itl-poc-agent
+  tag: latest
+  pullPolicy: Always
+
+agent:
+  name: itl-poc-agent
+  marketplaceSource: https://github.com/ITlusions/ITL.Claude.PluginMarketplace.git
+  marketplaceName: itl-claude-tools
+  pluginName: hello-plugin
+
+# Name of an existing Secret with CLAUDE_CODE_OAUTH_TOKEN / ANTHROPIC_API_KEY (optional).
+authSecret: ""
+
+persistence:
+  size: 1Gi
+  storageClass: ""
+
+networkPolicy:
+  enabled: true
+  # Cluster-internal ranges blocked for egress; HTTPS (443) to everything else is allowed.
+  blockedCidrs: [10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 169.254.0.0/16]
+  dnsNamespace: kube-system
+
+resources:
+  requests: {cpu: 100m, memory: 256Mi}
+  limits: {cpu: "1", memory: 1Gi}

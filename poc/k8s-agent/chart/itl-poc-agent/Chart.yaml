@@ -1,0 +1,6 @@
+apiVersion: v2
+name: itl-poc-agent
+description: PoC Claude Code agent that installs a marketplace plugin and is remotely controllable
+type: application
+version: 0.1.0
+appVersion: "0.1.0"

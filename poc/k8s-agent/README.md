@@ -13,6 +13,23 @@ docker push ghcr.io/itlusions/itl-poc-agent:latest
 kubectl apply -f poc/k8s-agent/k8s/agent.yaml
 ```
 
+### Or with Helm
+
+```bash
+helm install poc poc/k8s-agent/chart/itl-poc-agent -n itl-agent --create-namespace \
+  --set agent.pluginName=hello-plugin
+```
+
+The Deployment is then named `poc-itl-poc-agent` (`<release>-itl-poc-agent`); substitute it for
+`deploy/itl-poc-agent` in the commands below. Values: `image.*`, `agent.*`, `authSecret`,
+`persistence.*`, `networkPolicy.*`.
+
+## Network policy
+
+Both variants ship a NetworkPolicy: no ingress (Remote Control is outbound-only), egress only to
+cluster DNS and TCP 443 on public IPs (RFC1918/link-local blocked). Needs a CNI that enforces
+NetworkPolicy. Tighten further by pinning CIDRs for Anthropic/GitHub/npm if your CNI supports FQDN rules.
+
 ## Log in (one time)
 
 Credentials are stored on the PVC (`/home/agent/.claude`), so this survives restarts.
