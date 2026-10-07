@@ -15,14 +15,17 @@ Or locally, before pushing:
 /plugin install <plugin-name>@itl-claude-tools
 ```
 
-## Plugins
+## Plugins (7)
 
-| Plugin | Description |
-|---|---|
-| [`nexustrade-plugin`](plugins/nexustrade-plugin) | Quantitative trading analysis — 7-step technical/fundamental analysis, position sizing, risk/reward validation, adversarial risk review. Agents: `nexustrade`, `nexustrade-analyst`, `nexustrade-portfolio`, `nexustrade-risk`. Skill: `nexustrade` (methodology + Jupyter calculator notebooks). Commands: `/analyze`, `/position`, `/size`, `/compare`, `/watchlist`, `/journal`. |
-| [`hello-plugin`](plugins/hello-plugin) | Minimal example plugin (one skill, no agents) — exists to prove the pipeline scales to multiple plugins with zero pipeline changes. |
-| [`togaf-plugin`](plugins/togaf-plugin) | TOGAF 9.2-aligned enterprise architecture advisor, ported from the ITL.Agents Copilot custom agent (`CloudArchitect.agent.md`). Architecture reviews, ADRs, governance frameworks, TOGAF phase guidance for the ITL Cloud Control Plane and similar multi-cloud, provider-pattern platforms. Agent: `togaf-architect`. |
-| [`togaf10-plugin`](plugins/togaf10-plugin) | Domain-agnostic TOGAF® Standard, 10th Edition enterprise architect — not tied to ITL or any specific tech stack. Full ADM deliverable checklist (Preliminary–H plus Requirements Management) and 13 starter templates (Architecture Vision, Statement of Architecture Work, gap analysis, migration roadmap, compliance assessment, ADRs, etc.), inspired by the community [TOGAF-Master-Documenting-Template](https://github.com/JasonTeixeira/TOGAF-Master-Documenting-Template). Agent: `togaf10-architect`. Skill: `togaf10`. |
+| Plugin | Agent(s) | Description |
+|---|---|---|
+| **[`nexustrade-plugin`](plugins/nexustrade-plugin)** | `nexustrade`, `nexustrade-analyst`, `nexustrade-portfolio`, `nexustrade-risk` | Quantitative trading analysis — 7-step technical/fundamental analysis, position sizing, risk/reward validation, adversarial risk review. Skills: `nexustrade` (methodology + Jupyter calculator notebooks), `nexustrade-cli` (read-only monitoring CLI: ladder and price alerts, gainers screen, signal journal, performance rank; the CLI package is installed separately). Commands: `/analyze`, `/position`, `/size`, `/compare`, `/watchlist`, `/journal`. |
+| **[`developer`](plugins/developer)** | `developer` | Software development lifecycle toolkit — Git workflows, CI/CD pipelines, version management, testing strategies, Python code organization, build automation, deployment setup. |
+| **[`itl-cloud-architect`](plugins/itl-cloud-architect)** | `cloud-architect` | Enterprise-grade cloud control plane architecture advisor. Specializes in TOGAF 9.2 frameworks, microservices governance, resource provider patterns, cloud-native platform engineering, and the ITL Control Plane architecture. |
+| **[`amalia-security-engineer`](plugins/amalia-security-engineer)** | `amalia-security-engineer` | Automated security vulnerability scanner — SAST code scanning, attack surface mapping, binary hardening analysis, memory safety scanning, exploitability assessment, ROP chain analysis, threat intelligence via Amalia CLI. Covers Python, JavaScript, C/C++. Full OWASP Top 10 & CWE Top 25 mapping. |
+| **[`hello-plugin`](plugins/hello-plugin)** | *(none)* | Minimal example plugin (one skill, no agents) — exists to prove the pipeline scales to multiple plugins with zero pipeline changes. |
+| **[`togaf-plugin`](plugins/togaf-plugin)** | `togaf-architect` | TOGAF 9.2-aligned enterprise architecture advisor, ported from ITL.Agents. Architecture reviews, ADRs, governance frameworks, TOGAF phase guidance for multi-cloud, provider-pattern platforms. |
+| **[`togaf10-plugin`](plugins/togaf10-plugin)** | `togaf10-architect` | Domain-agnostic TOGAF® Standard, 10th Edition enterprise architect. Full ADM deliverable checklist and 13 starter templates (Architecture Vision, gap analysis, migration roadmap, compliance assessment, ADRs, etc.). Skill: `togaf10`. |
 
 ## Adding a new plugin
 
