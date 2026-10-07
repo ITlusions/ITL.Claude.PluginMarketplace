@@ -1,6 +1,6 @@
 ---
 name: nexustrade-cli
-description: Run the NexusTrade monitoring CLI (`nexustrade`) for a stock watchlist - buy-ladder levels and alerts, one-shot price alerts, big-player gainers screen, signal journal, performance ranking, tool inventory. Use for scheduled checks (LADDER ALERT CHECK, PRICE ALERT CHECK, GAINERS CHECK, DAILY LADDER RECOMPUTE, SIGNAL JOURNAL UPDATE) and "how did X perform" questions. READ-ONLY, never places orders.
+description: Run the NexusTrade monitoring CLI (`nexustrade`) for a stock watchlist - buy-ladder levels and alerts, one-shot price alerts, big-player gainers screen, signal journal, performance ranking, market regime tags, discipline rule check against the live account, MU revenue breakdown, tool inventory. Use for scheduled checks (LADDER ALERT CHECK, PRICE ALERT CHECK, GAINERS CHECK, DAILY LADDER RECOMPUTE, SIGNAL JOURNAL UPDATE), "how did X perform", "what regime are we in" and "am I within my rules" questions. READ-ONLY, never places orders.
 ---
 
 # nexustrade CLI
@@ -36,6 +36,11 @@ Run `nexustrade status` first if unsure what exists.
 | `journal evaluate` | Score logged signals at 5 and 20 days | yes |
 | `journal report` | Show journal results | no |
 | `rank [TICKERS] [--periods D...] [--benchmarks T...] [--sort D] [--json]` | Trailing performance vs benchmarks | no |
+| `regime` | Last 8 days tagged by trend (SMH vs 20/50-day averages), volatility (ATR% rank) and breadth (share of tracked tickers above their 20-day average), plus journaled ladder signals grouped by regime | no |
+| `strategy` | Ladder and AMD breakout rule card plus a descriptive reading of the current regime. Informational only, no rule is gated by regime | no |
+| `discipline check` | Compare live positions, open orders and balance with `discipline.json`: BREACH (position over max %), REVIEW (loss past invalidation %), VERIFY (sell limit over 15% from price), NOTE (no stop, low cash) | no |
+| `discipline rules` | Print the written rules. Creates `discipline.json` with defaults if missing | first run only |
+| `revenue [--chart [PATH]]` | Micron revenue by business unit, product and region (stored reported figures, extended by hand each earnings release). `--chart` needs matplotlib | no |
 | `status [--only live\|tool\|experimental\|research\|archived]` | Tool inventory from `metadata.json` | no |
 
 ## Rules for checks
@@ -45,6 +50,9 @@ Run `nexustrade status` first if unsure what exists.
 - Ladder trigger: report ticker, level, price and tranche shares. Remind to cancel the lowest rung if the one above closes broken, and to stop near the final rung.
 - Watch-only tickers (for example AMD) are never traded. A breakout counts only on a daily close above the level on higher volume.
 - Gainers: after the screen, look up news for the printed tickers, then a short table. SKIP gets one line.
+- Regime and strategy output is context, not a trading signal. A 250-day test on MU, ASML and TSM found DOWN or WEAK-breadth days were followed by the best 5-day returns, so never tell the user to pause or skip a ladder rung because of the regime. The per-regime journal table is empty until signals have 5-day outcomes; small samples are a log, not evidence.
+- Discipline check: quote the BREACH, REVIEW and VERIFY lines as printed. Never place, change or cancel an order to fix a finding; the user decides.
+- Discipline limits live in `discipline.json` (`max_position_pct`, `invalidation_loss_pct`, `min_cash_pct`, `account_id`). Regime constants (benchmark, SMAs, percentiles, breadth cut-offs) are at the top of `regime.py`.
 - Never run state-writing commands as "tests" - they alter live alert and ladder state.
 
 ## Parsing tips
