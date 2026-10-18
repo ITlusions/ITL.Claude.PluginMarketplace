@@ -1,0 +1,11 @@
+{
+  "name": "docs-structure-plugin",
+  "description": "Reorganize a project's Markdown documentation into a single docs/ folder, grouped into numbered x.y-title.md sections in a sensible reading order, with every cross-reference rewritten to match.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Niels Weistra",
+    "email": "n.weistra@itlusions.nl"
+  },
+  "repository": "https://github.com/ITlusions/ITL.Claude.PluginMarketplace",
+  "license": "MIT"
+}

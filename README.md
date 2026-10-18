@@ -15,7 +15,7 @@ Or locally, before pushing:
 /plugin install <plugin-name>@itl-claude-tools
 ```
 
-## Plugins (7)
+## Plugins (8)
 
 | Plugin | Agent(s) | Description |
 |---|---|---|
@@ -26,6 +26,7 @@ Or locally, before pushing:
 | **[`hello-plugin`](plugins/hello-plugin)** | *(none)* | Minimal example plugin (one skill, no agents) — exists to prove the pipeline scales to multiple plugins with zero pipeline changes. |
 | **[`togaf-plugin`](plugins/togaf-plugin)** | `togaf-architect` | TOGAF 9.2-aligned enterprise architecture advisor, ported from ITL.Agents. Architecture reviews, ADRs, governance frameworks, TOGAF phase guidance for multi-cloud, provider-pattern platforms. |
 | **[`togaf10-plugin`](plugins/togaf10-plugin)** | `togaf10-architect` | Domain-agnostic TOGAF® Standard, 10th Edition enterprise architect. Full ADM deliverable checklist and 13 starter templates (Architecture Vision, gap analysis, migration roadmap, compliance assessment, ADRs, etc.). Skill: `togaf10`. |
+| **[`docs-structure-plugin`](plugins/docs-structure-plugin)** | *(none)* | Consolidates a project's scattered Markdown docs into docs/ and renames them with a numbered x.y-title.md scheme that encodes reading order, rewriting every cross-reference to match. Skill: `restructure-docs`. |
 
 ## Adding a new plugin
 

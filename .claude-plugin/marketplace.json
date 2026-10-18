@@ -39,6 +39,11 @@
       "name": "togaf10-plugin",
       "source": "./plugins/togaf10-plugin",
       "description": "Domain-agnostic TOGAF® Standard, 10th Edition enterprise architect. Full ADM deliverable checklist plus 13 starter templates (vision, gap analysis, migration roadmap, compliance review, ADRs, etc.). Not tied to any organization or tech stack. Agent: `togaf10-architect`. Skill: `togaf10`."
+    },
+    {
+      "name": "docs-structure-plugin",
+      "source": "./plugins/docs-structure-plugin",
+      "description": "Consolidates a project's scattered Markdown docs into docs/ and renames them with a numbered x.y-title.md scheme that encodes reading order, rewriting every cross-reference (links, bare mentions, directory-tree diagrams) to match. Skill: `restructure-docs`."
     }
   ]
 }
